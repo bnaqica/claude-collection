@@ -1,0 +1,7 @@
+# Added on top of src/main/resources/application.yml for tests. The issuer is never contacted.
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9999/test-issuer

@@ -1,0 +1,16 @@
+# Started automatically by `./gradlew bootRun`, and stopped again when the application exits.
+services:
+  mongodb:
+    image: mongo:8
+    environment:
+      MONGO_INITDB_DATABASE: {{SNAKE_NAME}}_db
+      MONGO_INITDB_ROOT_USERNAME: {{SNAKE_NAME}}_local
+      MONGO_INITDB_ROOT_PASSWORD: local
+    ports:
+      # A random host port, so several services can run side by side. Find it with `docker compose port mongodb 27017`.
+      - "127.0.0.1::27017"
+    volumes:
+      - mongodb-data:/data/db
+
+volumes:
+  mongodb-data:

@@ -1,0 +1,13 @@
+schema: spec-driven
+
+# Passed to every OpenSpec workflow.
+context: |
+  Claude never commits, pushes or merges in this repository. The developer reviews and commits every change.
+
+# How /opsx:apply does its work. .claude/rules/development-workflow.md has the full workflow.
+operations:
+  apply:
+    guidance:
+      - For every task, invoke the superpowers:test-driven-development skill before writing code, and write the failing test first.
+      - Skip any commit step in that skill, and never delete existing code to satisfy it. Nothing is committed, so deleted work can't be recovered.
+      - When all tasks are complete, invoke the superpowers:requesting-code-review skill, following the code review section of .claude/rules/development-workflow.md.

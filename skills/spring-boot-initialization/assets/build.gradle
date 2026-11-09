@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '4.1.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.google.cloud.tools.jib' version '3.5.4'
+    id 'com.diffplug.spotless' version '8.11.0'
+}
+
+group = '{{GROUP}}'
+version = '0.0.1-SNAPSHOT'
+description = '{{NAME}}'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
+    // springdoc isn't in Spring Boot's BOM
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
+{{MAIN_DEPENDENCIES}}
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test'
+{{TEST_DEPENDENCIES}}    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacoco {
+    toolVersion = '0.8.16'
+}
+
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// `./gradlew build` fails on unformatted code; `./gradlew spotlessApply` fixes it
+spotless {
+    java {
+        target 'src/**/*.java'
+        palantirJavaFormat('2.103.0')
+        removeUnusedImports()
+    }
+}
+
+// `./gradlew bootRun` targets the local environment by default
+tasks.named('bootRun') {
+    systemProperty 'spring.profiles.active', System.getProperty('spring.profiles.active', 'local')
+}
+
+// Set IMAGE_REGISTRY (for example ghcr.io/my-org) to push with `./gradlew jib`
+def imageRegistry = providers.environmentVariable('IMAGE_REGISTRY').map { "${it}/" }.getOrElse('')
+
+jib {
+    // Keeps developmentOnly dependencies such as spring-boot-docker-compose out of the image
+    configurationName = 'productionRuntimeClasspath'
+    from {
+        image = 'eclipse-temurin:25-jre'
+    }
+    to {
+        image = "${imageRegistry}{{NAME}}"
+        tags = [project.version.toString(), 'latest']
+    }
+    container {
+        mainClass = '{{PACKAGE}}.{{MAIN_CLASS}}'
+        ports = ['{{PORT}}']
+        user = '1000:1000'
+        jvmFlags = ['-XX:MaxRAMPercentage=75.0']
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+    }
+}
