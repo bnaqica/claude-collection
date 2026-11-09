@@ -1,6 +1,6 @@
-# Added on top of src/main/resources/application.yml for tests. The issuer is never contacted.
+# Added on top of src/main/resources/application.yml for tests. The addresses here are never contacted.
 spring:
-  security:
+{{TEST_KAFKA}}  security:
     oauth2:
       resourceserver:
         jwt:

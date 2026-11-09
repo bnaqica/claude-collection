@@ -69,6 +69,9 @@ becomes a 500.
 - Listeners must be idempotent on the event id, because delivery is at-least-once.
 - Use a `DefaultErrorHandler` with `DeadLetterPublishingRecoverer` to `<topic>-dlq` and `FixedBackOff(1000, 3)`.
   Don't retry `JacksonException`, and log before sending to the DLQ, or failures disappear silently.
+- Tests don't set `KAFKA_BOOTSTRAP_SERVERS`, so `src/test/resources/config/application.yml` gives a placeholder broker
+  and sets `spring.kafka.listener.auto-startup: false`. Without these, a `@KafkaListener` fails the application context
+  test. A test that really consumes needs its own broker and has to turn auto-startup back on.
 - `@KafkaListener` can't bind a YAML list property. Use a comma-separated string with
   `#{'${app.kafka.topics}'.split(',')}`.
 

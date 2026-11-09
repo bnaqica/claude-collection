@@ -94,6 +94,8 @@ POSTGRES_AUDIT_CLASSES = {
 }
 KAFKA_MAIN = "implementation 'org.springframework.boot:spring-boot-starter-kafka'"
 KAFKA_TEST = "testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'"
+# KAFKA_BOOTSTRAP_SERVERS isn't set in tests, and a listener would fail the context on the unresolved value
+TEST_KAFKA_SETTINGS = "  kafka:\n    bootstrap-servers: localhost:9092\n    listener:\n      auto-startup: false\n"
 
 
 def application_yml(name, port, db, kafka, integration):
@@ -252,6 +254,7 @@ def main():
         "MAIN_DEPENDENCIES": "".join(f"    {d}\n" for d in deps),
         "TEST_DEPENDENCIES": "".join(f"    {d}\n" for d in test_deps),
         "SNAKE_NAME": a.name.replace("-", "_"),
+        "TEST_KAFKA": TEST_KAFKA_SETTINGS if a.kafka else "",
         "STACK": STACK[a.db],
         "ENV_TABLE": env_table(a.db, a.kafka),
         "TEST_PREREQUISITE": "- Docker running, for the local database and the Testcontainers tests.\n" if uses_testcontainers else "",
